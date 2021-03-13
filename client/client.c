@@ -1,24 +1,25 @@
-#include <zmq.h>
-#include <string.h>
 #include <stdio.h>
-#include <Windows.h>
+#include <zmq.h>
+#include <person.h>
 
-int main (void)
-{
-    printf ("Connecting to hello world server \n");
-    void *context = zmq_ctx_new ();
-    void *requester = zmq_socket (context, ZMQ_REQ);
-    zmq_connect (requester, "tcp://localhost:5555");
+int main(int argc, char *argv[]) {
 
-    int request_nbr;
-    for (request_nbr = 0; request_nbr != 10; request_nbr++) {
-        char buffer [10];
-        printf ("Sending Hello %d \n", request_nbr);
-        zmq_send (requester, "Hello", 5, 0);
-        zmq_recv (requester, buffer, 10, 0);
-        printf ("Received World %d \n", request_nbr);
+    // Create a context and socket
+    void *context = zmq_ctx_new();
+    void *requester = zmq_socket(context, ZMQ_REQ);
+    zmq_connect(requester, "tcp://localhost:5555");
+
+    person_t *person = malloc(sizeof(person_t));
+
+    if(argc > 4){
+        set_person(argv, person);
     }
-    zmq_close (requester);
-    zmq_ctx_destroy (context);
+
+    zmq_send(requester, person, sizeof(person_t), 0);
+
+    // Shutdown Client
+    zmq_close(requester);
+    zmq_ctx_destroy(context);
+    
     return 0;
 }
